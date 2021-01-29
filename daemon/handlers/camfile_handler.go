@@ -18,7 +18,7 @@ import (
 
 // VideoFile has the metainfomation on each mp4
 type VideoFile struct {
-	Id               string    `json:"id"` // Generated UUID
+	ID               string    `json:"id"` // Generated UUID
 	Name             string    `json:"filename"`
 	ThumbnailFile    string    `json:"-"`
 	ThumbnailRelPath string    `json:"thumbnail_path"`
@@ -43,7 +43,7 @@ var (
 	CamStructure CamFS //make(map[string]VideoFile)
 )
 
-func (cfs CamFS) remove(rmFile string) {
+func (cfs *CamFS) remove(rmFile string) {
 	for i := range cfs.VideoFiles {
 		if cfs.VideoFiles[i].FullPath == rmFile {
 			cfs.VideoFiles[i] = VideoFile{}
@@ -52,16 +52,17 @@ func (cfs CamFS) remove(rmFile string) {
 }
 
 // FindByID will return the VideoFile with the given `id`
-func (cfs CamFS) FindByID(id string) (VideoFile, error) {
+func (cfs *CamFS) FindByID(id string) (VideoFile, error) {
 	for i := range cfs.VideoFiles {
-		if cfs.VideoFiles[i].Id == id {
+		if cfs.VideoFiles[i].ID == id {
 			return cfs.VideoFiles[i], nil
 		}
 	}
 	return VideoFile{}, fmt.Errorf("VideoFile with Id %s not found", id)
 }
 
-func (cfs CamFS) EventsSorted() map[string]map[string][]VideoFile {
+// EventsSorted sorts the events found
+func (cfs *CamFS) EventsSorted() map[string]map[string][]VideoFile {
 	r := make(map[string]map[string][]VideoFile)
 	for i := range cfs.VideoFiles {
 		//r[cfs.VideoFiles[i].Event] = append(r[cfs.VideoFiles[i].Event], cfs.VideoFiles[i])
@@ -115,7 +116,7 @@ func indexFile(camfspath string, f os.FileInfo) {
 		log.Warn("Ignoring ", f.Name(), "(", f.Size(), " bytes)")
 	} else { // File is not corrupted or just a mp4 header
 		if f.Name()[len(f.Name())-4:] == ".mp4" { // If extension matches .mp4
-			v.Id = guuid.New().String()
+			v.ID = guuid.New().String()
 			v.Name = f.Name()
 			v.Size = f.Size()
 			v.FullPath = camfspath
@@ -159,6 +160,7 @@ func GenerateCoverImage(videoFile string, outFile string, imageWidth ...int) err
 	}
 	return err
 }
+
 func parseFileDetails(path string, videoFile *VideoFile) {
 	// Paths has <something>/TeslaCam/SavedClips/2019-08-01_17-55-02/2019-08-01_17-56-02-front.mp4 format
 	timeFormat := "2006-01-02_15-04-05" // https://stackoverflow.com/a/14106561/10334686

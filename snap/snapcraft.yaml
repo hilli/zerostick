@@ -28,7 +28,7 @@ plugs:
   zerostick-fs:
     interface: system-files # https://snapcraft.io/docs/system-files-interface
     write:
-      - /etc/wpa_supplicant.conf
+      - /etc/wpa_supplicant/wpa_supplicant.conf
 
 apps:
   zerostick:
